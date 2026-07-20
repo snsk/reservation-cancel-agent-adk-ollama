@@ -20,7 +20,7 @@ from .tools import (
 ensure_ollama_env()
 
 root_agent = Agent(
-    model=LiteLlm(model=get_litellm_model()),
+    model=LiteLlm(model=get_litellm_model(), think=False),
     name="reservation_cancel_agent",
     description="Helps users review and cancel eligible reservations using local mock data.",
     instruction="""
