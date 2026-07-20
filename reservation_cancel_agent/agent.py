@@ -6,6 +6,7 @@ from google.adk.agents import Agent
 from google.adk.models.lite_llm import LiteLlm
 from google.genai import types
 
+from .action_bridge import rewrite_react_json_action
 from .settings import ensure_ollama_env, get_litellm_model
 from .tools import (
     authenticate_user,
@@ -23,11 +24,13 @@ root_agent = Agent(
     model=LiteLlm(model=get_litellm_model(), think=False),
     name="reservation_cancel_agent",
     description="Helps users review and cancel eligible reservations using local mock data.",
+    after_model_callback=rewrite_react_json_action,
     instruction="""
 You are a reservation cancellation assistant.
 
 Rules:
 - Use the tools for all reservation data. Never infer reservation ownership or status from chat history.
+- Call ADK tools directly. Do not write JSON with action/arguments as a normal message.
 - Start by authenticating the user_id supplied by the user.
 - Before cancellation, list or check the reservation details and explain them to the user.
 - Never call cancel_reservation until prepare_cancellation has succeeded and the user has explicitly confirmed they want to cancel.
