@@ -15,18 +15,18 @@ Ollama が `localhost:11434` で起動していることを確認してくださ
 
 ```bash
 ollama list
-ollama show qwen2.5-coder:7b-instruct
+ollama show gemma4:12b
 ```
 
 このエージェントはツール呼び出しを使うため、`ollama show <model>` の `Capabilities` に `tools` が含まれるモデルを使ってください。
 
 ## 実行
 
-デフォルトモデルは軽量優先で `qwen2.5-coder:7b-instruct` です。ADK に渡すモデル文字列はコード側で `ollama_chat/{OLLAMA_MODEL}` として組み立てます。
+デフォルトモデルは、ADK/LiteLLM のツール呼び出しで比較的安定している `gemma4:12b` です。ADK に渡すモデル文字列はコード側で `ollama_chat/{OLLAMA_MODEL}` として組み立てます。
 
 ```bash
 export OLLAMA_API_BASE="http://localhost:11434"
-export OLLAMA_MODEL="qwen2.5-coder:7b-instruct"
+export OLLAMA_MODEL="gemma4:12b"
 adk web
 ```
 
@@ -39,6 +39,13 @@ export OLLAMA_MODEL="qwen3.5:35b-a3b"
 adk web
 ```
 
+軽量モデルを試す場合:
+
+```bash
+export OLLAMA_MODEL="qwen2.5-coder:7b-instruct"
+adk web
+```
+
 Ollama 接続で `localhost` が解決できない場合は、次のように IPv4 ループバックを指定してください。
 
 ```bash
@@ -46,7 +53,7 @@ export OLLAMA_API_BASE="http://127.0.0.1:11434"
 adk web
 ```
 
-モデルがツール呼び出し用 XML や空の JSON 断片を通常テキストとして返す場合は、`ollama show <model>` で `tools` capability がある別モデルに切り替えてください。
+モデルがツール呼び出し用 XML や空の JSON 断片を通常テキストとして返す場合は、`ollama show <model>` で `tools` capability がある別モデルに切り替えてください。`qwen2.5-coder:7b-instruct` は軽量ですが、この ADK サンプルではツール呼び出しが途中で止まることがありました。
 
 ## 動作確認プロンプト例
 

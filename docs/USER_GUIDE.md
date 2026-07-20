@@ -9,13 +9,13 @@
 推奨デフォルトモデル:
 
 ```bash
-qwen2.5-coder:7b-instruct
+gemma4:12b
 ```
 
 モデルがツール対応か確認します。
 
 ```bash
-ollama show qwen2.5-coder:7b-instruct
+ollama show gemma4:12b
 ```
 
 `Capabilities` に `tools` が含まれているモデルを指定してください。
@@ -33,7 +33,7 @@ pip install -e ".[test]"
 
 ```bash
 export OLLAMA_API_BASE="http://localhost:11434"
-export OLLAMA_MODEL="qwen2.5-coder:7b-instruct"
+export OLLAMA_MODEL="gemma4:12b"
 adk web
 ```
 
@@ -46,6 +46,13 @@ export OLLAMA_MODEL="qwen3.5:35b-a3b"
 adk web
 ```
 
+軽量モデルを試す場合:
+
+```bash
+export OLLAMA_MODEL="qwen2.5-coder:7b-instruct"
+adk web
+```
+
 `localhost` で Ollama 接続が不安定な場合:
 
 ```bash
@@ -53,7 +60,7 @@ export OLLAMA_API_BASE="http://127.0.0.1:11434"
 adk web
 ```
 
-ローカルモデルによっては、ツール呼び出し用の XML や空 JSON を通常の文章として返すことがあります。その場合は `ollama show <model>` で `Capabilities` に `tools` がある別モデルへ切り替えてください。
+ローカルモデルによっては、ツール呼び出し用の XML や空 JSON を通常の文章として返すことがあります。その場合は `ollama show <model>` で `Capabilities` に `tools` がある別モデルへ切り替えてください。`qwen2.5-coder:7b-instruct` は軽量ですが、この ADK サンプルではツール呼び出しが途中で止まることがありました。
 
 ## 試す会話
 

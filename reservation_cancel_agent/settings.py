@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 
 DEFAULT_OLLAMA_API_BASE = "http://localhost:11434"
-DEFAULT_OLLAMA_MODEL = "qwen2.5-coder:7b-instruct"
+DEFAULT_OLLAMA_MODEL = "gemma4:12b"
 OLLAMA_PROVIDER = "ollama_chat"
 
 
