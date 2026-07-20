@@ -1,0 +1,18 @@
+[project]
+name = "reservation-cancel-agent"
+version = "0.1.0"
+description = "Local ADK reservation cancellation agent backed by Ollama."
+requires-python = ">=3.10"
+dependencies = [
+    "google-adk",
+    "litellm>=1.65.5,<1.80",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

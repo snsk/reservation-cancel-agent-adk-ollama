@@ -1,0 +1,35 @@
+{
+  "users": {
+    "u_alice": {
+      "display_name": "Alice",
+      "reservations": [
+        {
+          "reservation_id": "R100",
+          "service": "Dinner reservation",
+          "start_time": "2026-08-01T19:00:00+09:00",
+          "status": "active",
+          "cancellable": true
+        },
+        {
+          "reservation_id": "R101",
+          "service": "Non-refundable hotel booking",
+          "start_time": "2026-08-05T15:00:00+09:00",
+          "status": "active",
+          "cancellable": false
+        }
+      ]
+    },
+    "u_bob": {
+      "display_name": "Bob",
+      "reservations": [
+        {
+          "reservation_id": "R200",
+          "service": "Spa appointment",
+          "start_time": "2026-08-03T10:00:00+09:00",
+          "status": "active",
+          "cancellable": true
+        }
+      ]
+    }
+  }
+}
