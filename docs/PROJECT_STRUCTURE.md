@@ -12,12 +12,16 @@
 │   ├── agent.py
 │   ├── settings.py
 │   ├── store.py
+│   ├── tool_guard.py
 │   ├── tools.py
 │   └── data/
 │       └── reservations.seed.json
 ├── scripts/
 │   └── manual_test.py
 ├── tests/
+│   ├── test_action_bridge.py
+│   ├── test_agent_instruction.py
+│   ├── test_tool_guard.py
 │   └── test_tools.py
 └── docs/
     ├── PROJECT_STRUCTURE.md
@@ -30,6 +34,7 @@
 - `reservation_cancel_agent/action_bridge.py`: ローカルモデルが `{"action": ..., "arguments": ...}` のような ReAct 風 JSON を通常テキストとして返した場合に、許可済みツールだけ ADK function call へ変換します。
 - `reservation_cancel_agent/settings.py`: `OLLAMA_MODEL` と `OLLAMA_API_BASE` のデフォルト値と、`ollama_chat/{model_name}` の組み立てを管理します。
 - `reservation_cancel_agent/store.py`: seed JSON から初期化されるプロセス内 runtime store です。予約状態と確認トークンはここに保持されます。
+- `reservation_cancel_agent/tool_guard.py`: 未知ユーザーなど終端扱いできる Tool 失敗を会話状態に記録し、ローカルモデルが同じ Tool 呼び出しを繰り返すのを抑止します。
 - `reservation_cancel_agent/tools.py`: ADK に渡すツール関数です。ユーザー、所有者、状態、キャンセル可否、確認トークンの検証は store 側で実行します。
 - `reservation_cancel_agent/data/reservations.seed.json`: モック予約 DB の初期データです。
 - `scripts/manual_test.py`: LLM を使わずにツール層の正常系と境界ケースを確認する手動テストです。
@@ -46,5 +51,6 @@ LLM の会話履歴は予約 DB として使いません。キャンセル実行
 - `prepare_cancellation()` で発行された `confirmation_token` が対象ユーザーと予約に一致すること
 - ADK 補助ツール `confirm_and_cancel_reservation()` でも、明示確認フラグを受けた後に内部で `prepare_cancellation()` と `cancel_reservation()` を順に実行すること
 - ReAct 風 JSON の補正は `ALLOWED_ACTIONS` に含まれるツール名だけを変換し、未知の action は実行しないこと
+- 存在しないユーザー ID の認証失敗は終端応答として記録し、同一 ID の再認証ループを止めること
 
 このため、LLM が誤って「キャンセルしてよい」と判断しても、ツール検証に失敗する操作は拒否されます。

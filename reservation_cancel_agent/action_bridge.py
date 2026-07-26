@@ -10,6 +10,9 @@ from google.adk.agents.context import Context
 from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 
+from .tool_guard import is_repeated_failed_authentication
+from .tool_guard import unknown_user_message
+
 
 ALLOWED_ACTIONS = {
     "authenticate_user",
@@ -27,7 +30,11 @@ def rewrite_react_json_action(
     llm_response: LlmResponse,
 ) -> LlmResponse | None:
     """Convert `{"action": ..., "arguments": ...}` text into an ADK function call."""
-    del callback_context
+    if repeated_auth_message := _repeated_failed_auth_message(
+        callback_context,
+        llm_response,
+    ):
+        return _text_response(repeated_auth_message)
 
     if llm_response.get_function_calls():
         return None
@@ -54,6 +61,13 @@ def rewrite_react_json_action(
     if action not in ALLOWED_ACTIONS or not isinstance(arguments, dict):
         return None
 
+    if callback_context is not None and is_repeated_failed_authentication(
+        callback_context.state,
+        action,
+        arguments,
+    ):
+        return _text_response(unknown_user_message(arguments["user_id"]))
+
     return LlmResponse(
         content=types.Content(
             role="model",
@@ -63,6 +77,34 @@ def rewrite_react_json_action(
                     args=arguments,
                 )
             ],
+        )
+    )
+
+
+def _repeated_failed_auth_message(
+    callback_context: Context | None,
+    llm_response: LlmResponse,
+) -> str | None:
+    if callback_context is None:
+        return None
+
+    for function_call in llm_response.get_function_calls():
+        action = function_call.name or ""
+        arguments = function_call.args or {}
+        if is_repeated_failed_authentication(
+            callback_context.state,
+            action,
+            arguments,
+        ):
+            return unknown_user_message(arguments["user_id"])
+    return None
+
+
+def _text_response(text: str) -> LlmResponse:
+    return LlmResponse(
+        content=types.Content(
+            role="model",
+            parts=[types.Part(text=text)],
         )
     )
 

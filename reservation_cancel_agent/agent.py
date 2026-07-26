@@ -8,6 +8,7 @@ from google.genai import types
 
 from .action_bridge import rewrite_react_json_action
 from .settings import ensure_ollama_env, get_litellm_model
+from .tool_guard import record_failed_authentication
 from .tools import (
     authenticate_user,
     cancel_reservation,
@@ -20,17 +21,18 @@ from .tools import (
 
 ensure_ollama_env()
 
-root_agent = Agent(
-    model=LiteLlm(model=get_litellm_model(), think=False),
-    name="reservation_cancel_agent",
-    description="Helps users review and cancel eligible reservations using local mock data.",
-    after_model_callback=rewrite_react_json_action,
-    instruction="""
+AGENT_INSTRUCTION = """
 You are a reservation cancellation assistant.
 
 Rules:
 - Use the tools for all reservation data. Never infer reservation ownership or status from chat history.
 - Call ADK tools directly. Do not write JSON with action/arguments as a normal message.
+- Greeting handling: if the user's latest message is only a greeting or light thanks
+  such as "こんにちは", "おはよう", "こんばんは", or "ありがとう", reply briefly and
+  naturally. You may add one short sentence saying you can help review or cancel
+  reservations. Do not call reservation tools for greeting-only messages.
+- If the user includes both a greeting and reservation or cancellation intent,
+  continue with the normal reservation cancellation flow.
 - Start by authenticating the user_id supplied by the user.
 - Before cancellation, list or check the reservation details and explain them to the user.
 - Never call cancel_reservation until prepare_cancellation has succeeded and the user has explicitly confirmed they want to cancel.
@@ -41,7 +43,15 @@ Rules:
 - Do not expose internal implementation details except reservation facts and confirmation status needed by the user.
 - Do not show JSON snippets or tool-call placeholders to the user.
 - Keep responses concise and use the user's language.
-""",
+"""
+
+root_agent = Agent(
+    model=LiteLlm(model=get_litellm_model(), think=False),
+    name="reservation_cancel_agent",
+    description="Helps users review and cancel eligible reservations using local mock data.",
+    after_model_callback=rewrite_react_json_action,
+    after_tool_callback=record_failed_authentication,
+    instruction=AGENT_INSTRUCTION,
     tools=[
         authenticate_user,
         list_reservations,

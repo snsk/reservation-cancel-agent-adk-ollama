@@ -6,6 +6,11 @@ from google.genai import types
 from reservation_cancel_agent.action_bridge import rewrite_react_json_action
 
 
+class FakeContext:
+    def __init__(self, state: dict) -> None:
+        self.state = state
+
+
 def text_response(text: str) -> LlmResponse:
     return LlmResponse(
         content=types.Content(
@@ -53,3 +58,20 @@ def test_ignores_plain_text() -> None:
     response = text_response("こんにちは。ユーザーIDを教えてください。")
 
     assert rewrite_react_json_action(None, response) is None  # type: ignore[arg-type]
+
+
+def test_stops_repeated_failed_authentication_from_react_json() -> None:
+    response = text_response(
+        '{"action":"authenticate_user","arguments":{"user_id":"GUEST01"}}'
+    )
+    context = FakeContext(
+        {"reservation_cancel_agent.failed_auth_user_ids": ["GUEST01"]}
+    )
+
+    rewritten = rewrite_react_json_action(context, response)  # type: ignore[arg-type]
+
+    assert rewritten is not None
+    assert rewritten.get_function_calls() == []
+    assert rewritten.content is not None
+    assert rewritten.content.parts is not None
+    assert "GUEST01" in rewritten.content.parts[0].text
